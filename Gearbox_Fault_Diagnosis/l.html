@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gearbox Fault Diagnosis</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header, main {
+            padding: 2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: auto;
+            background-color: #0277bd; /* Set background color */
+            color: #fff; /* Set text color */
+            text-align: center;
+            padding: 1rem;
+        }
+
+        main {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.8); 
+        }
+
+        section {
+            margin-bottom: 2rem;
+        }
+
+        label {
+            margin-bottom: 0.5rem;
+            color: #0277bd;
+        }
+
+        input {
+            padding: 0.5rem;
+            border: 1px solid #0277bd;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        button {
+            background-color: #00838f;
+            color: #fff;
+            padding: 0.5rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #004d40;
+        }
+        
+
+        #result {
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .success {
+            color: #004d40;
+        }
+
+        .failure {
+            color: #c62828;
+        }
+
+        #gearboxImage {
+            width: 100%;
+            max-width: 400px;
+            margin: 1rem auto;
+            display: block;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        #gearboxImage:hover {
+            transform: scale(1.2);
+        }
+
+        .importance-section {
+            background-color: #a5d6a7;
+            transition: background-color 0.5s ease;
+        }
+
+        .result-animation {
+            animation-name: fadeIn;
+            animation-duration: 1s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section>
+            <h2>Input Vibration Data</h2>
+            <label for="vibrationInput1">Vibration 1:</label>
+            <input type="number" id="vibrationInput1" step="any" placeholder="Enter Vibration 1" required>
+
+            <!-- Repeat the pattern for other vibration inputs -->
+            <label for="vibrationInput2">Vibration 2:</label>
+            <input type="number" id="vibrationInput2" step="any" placeholder="Enter Vibration 2" required>
+
+            <label for="vibrationInput3">Vibration 3:</label>
+            <input type="number" id="vibrationInput3" step="any" placeholder="Enter Vibration 3" required>
+
+            <label for="vibrationInput4">Vibration 4:</label>
+            <input type="number" id="vibrationInput4" step="any" placeholder="Enter Vibration 4" required>
+
+            <label for="vibrationInput5">Vibration 5:</label>
+            <input type="number" id="vibrationInput5" step="any" placeholder="Enter Vibration 5" required>
+
+            <label for="vibrationInput6">Vibration 6:</label>
+            <input type="number" id="vibrationInput6" step="any" placeholder="Enter Vibration 6" required>
+
+            <label for="vibrationInput7">Vibration 7:</label>
+            <input type="number" id="vibrationInput7" step="any" placeholder="Enter Vibration 7" required>
+
+            <label for="vibrationInput8">Vibration 8:</label>
+            <input type="number" id="vibrationInput8" step="any" placeholder="Enter Vibration 8" required>
+
+            <label for="vibrationInput9">Vibration 9:</label>
+            <input type="number" id="vibrationInput9" step="any" placeholder="Enter Vibration 9" required>
+
+            <label for="vibrationInput10">Vibration 10:</label>
+            <input type="number" id="vibrationInput10" step="any" placeholder="Enter Vibration 10" required>
+
+            <button type="button" onclick="predict()">Predict</button>
+        </section>
+
+        <section>
+            <h2>Prediction Result</h2>
+            <div id="result"></div>
+        </section>
+    </main>
+
+    <script>
+        function predict() {
+            // Retrieve values from input fields
+            var vibrationData = [];
+            for (var i = 1; i <= 10; i++) {
+                var inputValue = parseFloat(document.getElementById('vibrationInput' + i).value);
+                if (isNaN(inputValue)) {
+                    alert('Please enter valid numeric values for all vibration inputs.');
+                    return;
+                }
+                vibrationData.push(inputValue);
+            }
+
+            // Send AJAX request to Flask server
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/predict", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    var resultDiv = document.getElementById('result');
+                    if (xhr.status === 200) {
+                        // Handle success response
+                        var response = JSON.parse(xhr.responseText);
+                        console.log(response);
+                        if (response.success) {
+                            var prediction = response.prediction;
+                            resultDiv.innerHTML = '<p class="' + (prediction === 1 ? 'failure' : 'success') + '">' + (prediction === 1 ? 'Fault detected' : 'No fault detected') + '</p>';
+                        } else {
+                            // Display error message
+                            console.error('Error:', response.error);
+                            resultDiv.innerHTML = '<p class="failure">Error: ' + response.error + '</p>';
+                        }
+                    } else {
+                        // Handle error response from server
+                        console.error('Error:', xhr.status);
+                        resultDiv.innerHTML = '<p class="failure">Error: Failed to connect to server</p>'; // Update error message
+                    }
+                    resultDiv.classList.add('result-animation');
+                }
+            };
+
+            xhr.send(JSON.stringify({ vibrationData: vibrationData }));
+        }
+    </script>
+</body>
+</html>
